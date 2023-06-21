@@ -7,7 +7,7 @@ const execSync       = require('child_process').execSync;
 const kugel          = require('kugel');
 const fetch          = require('node-fetch');
 
-const util = require('magaseo-hands/util');
+const util = require('hands/util');
 
 puppeteerExtra.use(StealthPlugin());
 
