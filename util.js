@@ -1,7 +1,9 @@
 let path = require('path');
 let fs   = require('fs-extra');
 
-const socketRooms = require(process.env['kugel-socket-rooms']);
+let socketRooms;
+
+if(process.env['kugel-socket-rooms']) socketRooms = require(process.env['kugel-socket-rooms']);
 
 module.exports = {
 
