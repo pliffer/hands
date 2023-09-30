@@ -170,6 +170,12 @@ module.exports = {
 
     },
 
+    async restart(){
+
+        execSync(path.join(__dirname, 'restart.puppeteer.sh'));
+
+    },
+
     async open(){
 
         if(!process.env.CHROME_PATH) return Promise.reject(new Error('Chrome path not defined! Please set the environment variable CHROME_PATH'));
@@ -180,7 +186,27 @@ module.exports = {
             headless: HEADLESS,
             executablePath: process.env.CHROME_PATH,
             args: args,
-            userDataDir: path.join(__dirname, 'user-data')
+            userDataDir: path.join(process.cwd(), 'user-data')
+        }).catch(async e => {
+
+            console.log(e);
+
+            console.log('PUPETEER TRAVOU!');
+
+            // Vamos então rodar .restart, que vai chamar um arquivo .sh que vai reiniciar o puppeteer ./bin/restart-puppeteer.sh
+            module.exports.restart();
+
+            browser = await puppeteerExtra.launch({
+                headless: HEADLESS,
+                executablePath: process.env.CHROME_PATH,
+                args: args,
+                userDataDir: path.join(process.cwd(), 'user-data')
+            }).catch(e => {
+
+                console.error('Puppeteer CRASHOU PELA SEGUNDA VEZ!');
+
+            });
+
         });
 
         let page = await browser.newPage();
@@ -342,3 +368,47 @@ module.exports = {
 kugel.Component.on('socket-listen', async app => {
 
 });
+
+setTimeout(function(){
+
+    // Verificamos aqui se os scripts .sh estão com permissão de execução
+    // Se não estiverem, vamos solicitar ao usuário, para que não de process.exit
+
+    let scripts = [
+        'free.ram.sh',
+        'restart.puppeteer.sh'
+    ];
+
+    let fatal = false;
+
+    for(let script of scripts){
+
+        let scriptPath = path.join(__dirname, script);
+
+        if(!fs.existsSync(scriptPath)) continue;
+
+        let stat = fs.statSync(scriptPath);
+
+        if(!(stat.mode & 1)){
+
+            console.log(`Script ${script} não tem permissão de execução. Isso pode prejudicar o funcionamento do hands`);
+            fatal = true;
+
+        }
+
+    }
+
+    scripts = scripts.map(script => {
+
+        return path.join('./node_modules/hands/', script);
+
+    });
+
+    if(fatal){
+
+        console.log('Para corrigir, execute o comando: chmod +x ' + scripts.join(' '));
+        process.exit();
+
+    }
+
+}, 4000);

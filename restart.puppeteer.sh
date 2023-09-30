@@ -1,0 +1,1 @@
+kill -9 $(ps aux | grep chrome/chrome | awk '{print $2}')
