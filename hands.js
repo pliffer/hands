@@ -4,6 +4,7 @@ const StealthPlugin  = require('puppeteer-extra-plugin-stealth');
 const fs             = require('fs-extra');
 const path           = require('path');
 const execSync       = require('child_process').execSync;
+const exec           = require('child_process').exec;
 const kugel          = require('kugel');
 const fetch          = require('node-fetch');
 
@@ -172,7 +173,19 @@ module.exports = {
 
     async restart(){
 
-        execSync(path.join(__dirname, 'restart.puppeteer.sh'));
+        const restartDelay = 2000;
+
+        exec(path.join(__dirname, 'restart.puppeteer.sh'), (err, stdout, stderr) => {
+
+            console.error('@pupeeteer restart');
+
+            if(err) console.log(err);
+
+            console.log(stdout);
+
+        });
+
+        return new Promise(resolve => setTimeout(resolve, restartDelay));
 
     },
 
@@ -191,12 +204,10 @@ module.exports = {
 
             console.log(e);
 
-            console.log('PUPETEER TRAVOU!');
-
             // Vamos então rodar .restart, que vai chamar um arquivo .sh que vai reiniciar o puppeteer ./bin/restart-puppeteer.sh
-            module.exports.restart();
+            await module.exports.restart();
 
-            browser = await puppeteerExtra.launch({
+            return puppeteerExtra.launch({
                 headless: HEADLESS,
                 executablePath: process.env.CHROME_PATH,
                 args: args,
@@ -204,6 +215,8 @@ module.exports = {
             }).catch(e => {
 
                 console.error('Puppeteer CRASHOU PELA SEGUNDA VEZ!');
+
+                throw e;
 
             });
 
