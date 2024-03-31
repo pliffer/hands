@@ -420,7 +420,7 @@ setTimeout(function(){
     if(fatal){
 
         console.log('Para corrigir, execute o comando: chmod +x ' + scripts.join(' '));
-        process.exit();
+        // process.exit();
 
     }
 
